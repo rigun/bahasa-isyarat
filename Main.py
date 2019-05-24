@@ -17,7 +17,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-def predictionData(file,sign):
+def predictionData(filename,sign):
     # Loads label file, strips off carriage return
     label_lines = [line.rstrip() for line
                        in tf.gfile.GFile("logs/"+sign+"_labels.txt")]
@@ -29,10 +29,7 @@ def predictionData(file,sign):
             with tf.Session() as sess:
                 # Feed the image_data as input to the graph and get first prediction
                 softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
-                # ImgData = cv2.imencode('.jpg', file)[1].tostring()
-                imgbytes = imread(file)
-                ImgData = imgbytes.tostring()
-                image_data = tf.gfile.FastGFile(ImgData, 'rb').read()
+                image_data = tf.gfile.FastGFile(filename, 'rb').read()
                 predictions = sess.run(softmax_tensor, \
                          {'DecodeJpeg/contents:0': image_data})
                 # Sort to show labels of first prediction in order of confidence
@@ -68,8 +65,10 @@ def inputTask():
         flash('No selected file')
         return redirect(request.url)
     if file and allowed_file(file.filename):
-        result1 = predictionData(file, 'asl')
-        result2 = predictionData(file, 'bisindo')
+        filename = secure_filename(file.filename)
+        file.save(filename)
+        result1 = predictionData(filename, 'asl')
+        result2 = predictionData(filename, 'bisindo')
         if result1[0] > result2[0]:
             predict = result1
         else:
