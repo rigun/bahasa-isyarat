@@ -1,11 +1,12 @@
 from flask import Flask, flash, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from flasgger import Swagger
-import cv2
+# import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.image as mpimg
 import tensorflow as tf
+from scipy.ndimage import imread
 
 app = Flask(__name__)
 Swagger(app)
@@ -28,7 +29,9 @@ def predictionData(file,sign):
             with tf.Session() as sess:
                 # Feed the image_data as input to the graph and get first prediction
                 softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
-                ImgData = cv2.imencode('.jpg', file)[1].tostring()
+                # ImgData = cv2.imencode('.jpg', file)[1].tostring()
+                imgbytes = imread(file)
+                ImgData = imgbytes.tostring()
                 image_data = tf.gfile.FastGFile(ImgData, 'rb').read()
                 predictions = sess.run(softmax_tensor, \
                          {'DecodeJpeg/contents:0': image_data})
