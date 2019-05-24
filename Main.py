@@ -1,6 +1,7 @@
 from flask import Flask, flash, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from flasgger import Swagger
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.image as mpimg
@@ -15,7 +16,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-def predictionData(ImgData,sign):
+def predictionData(file,sign):
     # Loads label file, strips off carriage return
     label_lines = [line.rstrip() for line
                        in tf.gfile.GFile("logs/"+sign+"_labels.txt")]
@@ -27,6 +28,7 @@ def predictionData(ImgData,sign):
             with tf.Session() as sess:
                 # Feed the image_data as input to the graph and get first prediction
                 softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
+                ImgData = cv2.imencode('.jpg', file)[1].tostring()
                 image_data = tf.gfile.FastGFile(ImgData, 'rb').read()
                 predictions = sess.run(softmax_tensor, \
                          {'DecodeJpeg/contents:0': image_data})
@@ -35,22 +37,6 @@ def predictionData(ImgData,sign):
                 sess.close()
                 tf.Variable(0)
                 return [predictions[0][top_k[0]],label_lines[top_k[0]]]
-
-@app.route('/get/task', methods=['GET'])
-def getTask():
-    """
-
-    Ini adalah endpoint untuk mengambil seluruh data
-    ---
-    tags:
-        - Rest Controller
-    parameter:
-    responses:
-        200:
-            description: Success get all data
-
-    """
-    return jsonify({'tasks': tasks})
 
 @app.route("/post/task", methods=['POST'])
 def inputTask():
@@ -68,7 +54,6 @@ def inputTask():
         200:
             description: Sucess Input
     """
-
     # check if the post request has the file part
     if 'upfile' not in request.files:
         flash('No file part')
@@ -87,16 +72,6 @@ def inputTask():
         else:
             predict = result2
         return jsonify({'meesaage': predict})
-    # imgpath = os.getcwd() + '/dataset/Bisindo/C_Bisindo/'
-    # imgname = 'C714.jpg'
-    # result1 = predictionData(imgpath + imgname, imgname, 'asl')
-    # result2 = predictionData(imgpath + imgname, imgname, 'bisindo')
-    # result1 = predictionData(img, 'asl')
-    # result2 = predictionData(img, 'bisindo')
-    # if result1[0] > result2[0]:
-    #     predict = result1
-    # else:
-    #     predict = result2
     return jsonify({'meesaage': 'error'})
 
 
