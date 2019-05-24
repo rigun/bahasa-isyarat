@@ -1,10 +1,35 @@
 from flask import Flask,jsonify,request
-from Model.Dataseed import tasks
-from Model.Petal import Petal
 from flasgger import Swagger
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.image as mpimg
+import tensorflow as tf
 
 app = Flask(__name__)
 Swagger(app)
+
+def predictionData(ImgData,sign):
+    # Loads label file, strips off carriage return
+    label_lines = [line.rstrip() for line
+                       in tf.gfile.GFile("logs/"+sign+"_labels.txt")]
+    with tf.gfile.FastGFile("logs/"+sign+"_graph.pb", 'rb') as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+        with tf.Graph().as_default() as graph:
+            _ = tf.import_graph_def(graph_def, name="")
+            with tf.Session() as sess:
+                # Feed the image_data as input to the graph and get first prediction
+                softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
+                print(imgLabel)
+                image_data = tf.gfile.FastGFile(ImgData, 'rb').read()
+                predictions = sess.run(softmax_tensor, \
+                         {'DecodeJpeg/contents:0': image_data})
+                # Sort to show labels of first prediction in order of confidence
+                top_k = predictions[0].argsort()[-len(predictions[0]):][::-1]
+                sess.close()
+                tf.Variable(0)
+                return [predictions[0][top_k[0]],label_lines[top_k[0]]]
+
 @app.route('/get/task', methods=['GET'])
 def getTask():
     """
@@ -21,65 +46,45 @@ def getTask():
     """
     return jsonify({'tasks': tasks})
 
-@app.route("/input/task", methods=['POST'])
+@app.route("/post/task", methods=['POST'])
 def inputTask():
     """
     Ini adalah endpoint untuk menambahkan data task
     ---
     tags:
         - Rest Controller
-    parameters:
-        - name: body
-          in: body
-          required:
-            - petalLength
-            - petalWidth
-            - sepalLength
-            - sepalWidth
-          properties:
-            petalLength:
-                type: integer
-                description: Masukkan data
-                default: 0
-            petalWidth:
-                type: integer
-                description: Masukkan data
-                default: 0
-            sepalLength:
-                type: integer
-                description: Masukkan data
-                default: 0
-            sepalWidth:
-                type: integer
-                description: Masukkan data
-                default: 0
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              # 'file' will be the field name in this multipart request
+              file:
+                type: string
+                format: binary
     responses:
         200:
             description: Sucess Input
     """
+
     new_task = request.get_json()
 
-    petalLength = new_task['petalLength']
-    peatlWidth = new_task['petalWidth']
-    sepalLength = new_task['sepalLength']
-    sepalWidth = new_task['sepalWidth']
+    img = new_task['file']
 
-    newPetal = Petal(sepalLength,sepalWidth,petalLength,peatlWidth)
-    tasks.append(newPetal.__dict__)
-    return jsonify({'meesaage': 'success'})
+    # imgpath = os.getcwd() + '/dataset/Bisindo/C_Bisindo/'
+    # imgname = 'C714.jpg'
+    # result1 = predictionData(imgpath + imgname, imgname, 'asl')
+    # result2 = predictionData(imgpath + imgname, imgname, 'bisindo')
+    result1 = predictionData(img, 'asl')
+    result2 = predictionData(img, 'bisindo')
+    if result1[0] > result2[0]:
+        predict = result1
+    else:
+        predict = result2
+    return jsonify({'meesaage': predict})
 
-@app.route('/update/task/<int:id>', methods=['PUT'])
-def updateTask(id):
-    new_task = request.get_json()
 
-    petalLength = new_task['petalLength']
-    peatlWidth = new_task['petalWidth']
-    sepalLength = new_task['sepalLength']
-    sepalWidth = new_task['sepalWidth']
-
-    newPetal = Petal(sepalLength, sepalWidth, petalLength, peatlWidth)
-    tasks[id] = newPetal.__dict__
-    return jsonify({'meesaage': 'success update'})
 
 @app.route('/delete/task/<int:id>', methods=['DELETE'])
 def deleteTask(id):
