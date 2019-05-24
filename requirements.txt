@@ -33,3 +33,4 @@ tornado==6.0.2
 Werkzeug==0.15.2
 wincertstore==0.2
 gunicorn==19.9.0
+flasgger==2.0
