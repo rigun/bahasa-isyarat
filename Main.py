@@ -1,12 +1,8 @@
 from flask import Flask, flash, request, redirect, jsonify
 from werkzeug.utils import secure_filename
 from flasgger import Swagger
-# import cv2
-import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib.image as mpimg
+from Model.Prediction import Prediction
 import tensorflow as tf
-from scipy.ndimage import imread
 
 app = Flask(__name__)
 Swagger(app)
@@ -73,7 +69,8 @@ def inputTask():
             predict = result1
         else:
             predict = result2
-        return predict
+        P = Prediction(predict[0], predict[1])
+        return jsonify({'message': [P.__dict__]})
     return jsonify({'message': 'error'})
 
 
