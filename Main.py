@@ -73,8 +73,8 @@ def inputTask():
             predict = result1
         else:
             predict = result2
-        return jsonify({'meesaage': predict})
-    return jsonify({'meesaage': 'error'})
+        return jsonify({'score': predict[0],'result': predict[1],'message': 'success'})
+    return jsonify({'message': 'error'})
 
 
 
