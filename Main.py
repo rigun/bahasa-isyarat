@@ -69,7 +69,7 @@ def inputTask():
             predict = result1
         else:
             predict = result2
-        P = Prediction(predict[0], predict[1])
+        P = Prediction(str(predict[0]), predict[1])
         return jsonify({'message': [P.__dict__]})
     return jsonify({'message': 'error'})
 
