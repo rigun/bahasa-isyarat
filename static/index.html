@@ -49,28 +49,10 @@ var video = document.getElementById('video');
     var canvas = document.getElementById('canvas');
     var context = canvas.getContext('2d');
     var video = document.getElementById('video');
-
-    // Trigger photo take
-    setInterval(function(){
-        context.drawImage(video, -100, 0, 320, 240);
-        axios.post('/predict', {upfile: canvas.toDataURL("image/jpg")})
-        .then(function (response) {
-            console.log(response);
-            document.getElementById("result").innerHTML = response.data.message[0].label + '('+ response.data.message[0].score + ')' ; 
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-     }, 20000);
     document.getElementById("snap").addEventListener("click", function() {
         context.drawImage(video, -100, 0, 320, 240);
-        var config = { 
-            headers: {  
-                    'Access-Control-Allow-Origin': '*'
-                }
-        }
-
-        axios.post('/predict', {upfile: canvas.toDataURL("image/jpg")}, config)
+        document.getElementById("result").innerHTML = 'Loading . . .' ; 
+        axios.post('/predict', {upfile: canvas.toDataURL("image/jpg")})
         .then(function (response) {
             console.log(response);
             document.getElementById("result").innerHTML = response.data.message[0].label + '('+ response.data.message[0].score + ')' ; 
