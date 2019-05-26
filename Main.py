@@ -1,4 +1,4 @@
-from flask import Flask, flash, request, redirect, url_for, jsonify
+from flask import Flask, flash, request, redirect, jsonify
 from werkzeug.utils import secure_filename
 from flasgger import Swagger
 # import cv2
@@ -73,7 +73,7 @@ def inputTask():
             predict = result1
         else:
             predict = result2
-        return jsonify({'score': predict[0],'result': predict[1],'message': 'success'})
+        return predict
     return jsonify({'message': 'error'})
 
 
