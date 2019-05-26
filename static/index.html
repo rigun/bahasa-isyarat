@@ -1,0 +1,84 @@
+<html>
+    <head>
+        <title>Try</title>
+    </head>
+    <style>
+        .columns{
+            display: flex;
+            width: 100%;
+        }
+        .column{
+            width: 33%;
+        }
+        .border{
+            width: 213px;
+            height: 200px;
+            position: absolute;
+            border: solid 1px red;
+            top: 8px;
+            left: 153px;
+        }
+    </style>
+    <body>
+        <div class="columns">
+            <div class="column" style="display:relative">
+                <video id="video" width="400" height="240" autoplay></video>
+                <button id="snap">Snap Photo</button>
+                <div class="border"></div>
+            </div>
+            <div class="column">
+                <canvas id="canvas" width="213" height="213"></canvas>
+            </div>
+            <div class="column">
+                <h1 id="result"></h1>
+            </div>
+        </div>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script>
+         // Grab elements, create settings, etc.
+var video = document.getElementById('video');
+    // Get access to the camera!
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // Not adding `{ audio: true }` since we only want video now
+        navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+        });
+    }
+    // Elements for taking the snapshot
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+    var video = document.getElementById('video');
+
+    // Trigger photo take
+    setInterval(function(){
+        context.drawImage(video, -100, 0, 320, 240);
+        axios.post('/predict', {upfile: canvas.toDataURL("image/jpg")})
+        .then(function (response) {
+            console.log(response);
+            document.getElementById("result").innerHTML = response.data.message[0].label + '('+ response.data.message[0].score + ')' ; 
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+     }, 20000);
+    document.getElementById("snap").addEventListener("click", function() {
+        context.drawImage(video, -100, 0, 320, 240);
+        var config = { 
+            headers: {  
+                    'Access-Control-Allow-Origin': '*'
+                }
+        }
+
+        axios.post('/predict', {upfile: canvas.toDataURL("image/jpg")}, config)
+        .then(function (response) {
+            console.log(response);
+            document.getElementById("result").innerHTML = response.data.message[0].label + '('+ response.data.message[0].score + ')' ; 
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    });
+        </script>
+    </body>
+</html>
