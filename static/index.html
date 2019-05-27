@@ -8,31 +8,23 @@
             width: 100%;
         }
         .column{
-            width: 33%;
+            width: 50%;
         }
         .border{
-            width: 213px;
+            width: 200px;
             height: 200px;
             position: absolute;
             border: solid 1px red;
             top: 8px;
-            left: 153px;
+            left: 414px;
         }
     </style>
     <body>
-        <div class="columns">
-            <div class="column" style="display:relative">
-                <video id="video" width="400" height="240" autoplay></video>
-                <button id="snap">Snap Photo</button>
-                <div class="border"></div>
-            </div>
-            <div class="column">
-                <canvas id="canvas" width="213" height="213"></canvas>
-            </div>
-            <div class="column">
-                <h1 id="result"></h1>
-            </div>
-        </div>
+        <video id="video" autoplay></video>
+        <button id="snap">Snap Photo</button>
+        <h1 id="result"></h1>
+        <canvas id="canvas" width="200" height="200"></canvas>
+
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <script>
          // Grab elements, create settings, etc.
@@ -50,7 +42,7 @@ var video = document.getElementById('video');
     var context = canvas.getContext('2d');
     var video = document.getElementById('video');
     document.getElementById("snap").addEventListener("click", function() {
-        context.drawImage(video, -100, 0, 320, 240);
+        context.drawImage(video, -400, 0);
         document.getElementById("result").innerHTML = 'Loading . . .' ; 
         axios.post('/predict', {upfile: canvas.toDataURL("image/jpg")})
         .then(function (response) {
