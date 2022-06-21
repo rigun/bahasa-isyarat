@@ -1,6 +1,6 @@
 Flask==1.0.2
 matplotlib==3.0.3
-numpy==1.16.3
+numpy==1.22.0
 tensorflow==1.13.1
 Werkzeug==0.15.2
 gunicorn==19.9.0
